@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 from pydantic import ValidationError
 from input_validation import AreaOfInterest, OutputFormats, OutputTypes, TimeOfInterest
 from shadapter import SentinelHubAdapter
@@ -17,26 +16,18 @@ load_dotenv()
 
 @app.command("request-image")
 def request_image(
-    # id: Annotated[
-    #     str,
-    #     typer.Argument(help="Sentinel Hub Client ID."),
-    # ] = os.environ.get("CLIENT_ID"),
-    # secret: Annotated[
-    #     str,
-    #     typer.Argument(help="Sentinel Hub Client Secret."),
-    # ] = os.environ.get("CLIENT_SECRET"),
     aoi: Annotated[
-        Tuple[float, float, float, float],
+        str,
         typer.Argument(
-            help="Area of interest as boundary bbox. Format: x1 y1 x2 y2. Example: 13.70 52.42 13.90 52.50"
+            help="Area of interest as boundary bbox. Format: x1,y1,x2,y2. Example: 13.325,52.476,13.491,52.561"
         ),
-    ],  # = (13.20, 52.42, 13.70, 52.61),
+    ],
     toi: Annotated[
-        Tuple[str, str],
+        str,
         typer.Argument(
-            help="Time of interest. Format: YYYY-MM-DD YYYY-MM-DD. Example: 2024-10-01 2024-10-30"
+            help="Time of interest as interval. Format: YYYY-MM-DD,YYYY-MM-DD. Example: 2024-10-01,2024-10-30"
         ),
-    ],  # = ["2024-05-01", "2024-05-20"],
+    ],
     output_type: Annotated[
         OutputTypes,
         typer.Option("--type", "-t", help="Image processing type."),
@@ -52,6 +43,24 @@ def request_image(
 ):
     """Download the least cloudy Sentinel-2 image."""
 
+    # INPUT VALIDATION
+    # aoi check
+    aoi = tuple(aoi.split(","))
+    try:
+        AreaOfInterest(coords=aoi)
+    except ValidationError:
+        typer.echo("Area of interest validation failed.\nSee --help for input hints.")
+        return
+
+    # toi check
+    toi = tuple(toi.split(","))
+    try:
+        TimeOfInterest(times=toi)
+    except ValidationError:
+        typer.echo("Time of interest validation failed.\nSee --help for input hints.")
+        return
+
+    # CREDENTIALS
     if env:
         id = os.environ.get("CLIENT_ID")
         secret = os.environ.get("CLIENT_SECRET")
@@ -74,20 +83,7 @@ def request_image(
         id = answers["id"]
         secret = answers["secret"]
 
-    # aoi check
-    try:
-        AreaOfInterest(coords=aoi)
-    except ValidationError:
-        typer.echo("Area of interest validation failed.\nSee help for input hints.")
-        return
-
-    # toi check
-    try:
-        TimeOfInterest(times=toi)
-    except ValidationError:
-        typer.echo("Time of interest validation failed.\nSee help for input hints.")
-        return
-
+    # DOWNLOAD
     adapter = SentinelHubAdapter(
         client_id=id,
         client_secret=secret,

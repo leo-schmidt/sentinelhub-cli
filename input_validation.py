@@ -15,12 +15,13 @@ class OutputFormats(Enum):
     TIFF = "tiff"
 
 
-def check_x_coords(x: int):
+def check_x_coords(x: str):
     assert -180 <= x <= 180
     return x
 
 
-def check_y_coords(y: int):
+def check_y_coords(y: str):
+    y = float(y)
     assert -90 <= y <= 90
     return y
 
