@@ -1,6 +1,5 @@
 import os
-from datetime import datetime
-from typing import List, Literal, Tuple
+from typing import List, Literal, Tuple, Union
 from sentinelhub import (
     SHConfig,
     DataCollection,
@@ -10,10 +9,10 @@ from sentinelhub import (
     bbox_to_dimensions,
     CRS,
     MimeType,
+    write_data,
 )
-from sentinelhub.io_utils import write_data
 from models import SearchResult
-from evalscripts import EvalScripts
+from evalscripts import EvalScript
 
 
 class SentinelHubAdapter:
@@ -63,9 +62,9 @@ class SentinelHubAdapter:
         self,
         aoi_coords: Tuple[float],
         time_interval: Tuple[str],
-        output_type: Literal["visual", "ndvi"],
-        output_format: MimeType,
-    ) -> str | None:
+        output_type: Literal["visual", "ndvi"] = "visual",
+        output_format: MimeType = "png",
+    ) -> Union[SearchResult, None]:
         """Finds the least clouded image and uses the Sentinel Hub Process API
         to download it.
 
@@ -73,28 +72,37 @@ class SentinelHubAdapter:
             aoi_coords (Tuple[float]): Area of interest (X1, Y1, X2, Y2)
             time_interval (Tuple[str]): Time interval of interest (Start date, end date)
             output_type (Literal["visual", "ndvi"]): Image output type
-            output_format (Literal["png", "tiff"]): Image output format
+            output_format (MimeType): Image output format
 
         Returns:
             str | None: Path to downloaded file.
         """
         aoi_bbox = BBox(bbox=aoi_coords, crs=CRS.WGS84)
+        aoi_size = bbox_to_dimensions(
+            aoi_bbox,
+            resolution=10,  # highest resolution in meters
+        )
+        # maximum allowable aoi size is 2500x2500 pixels
+        if aoi_size[0] >= 2500:
+            raise ValueError("Requested image width is too large.")
+        if aoi_size[1] >= 2500:
+            raise ValueError("Requested image height is too large.")
+
+        # set eval_script
+        if output_type == "visual":
+            eval_script = EvalScript.VISUAL.value
+        elif output_type == "ndvi":
+            eval_script = EvalScript.NDVI.value
+        else:
+            raise ValueError("""Output type not one of ("visual", "ndvi")""")
+
+        # search catalog and get best result (= lowest cloud cover)
         search_results = self._search_catalog(aoi_bbox, time_interval)
         if not search_results:
             return
-        # best result = lowest cloud cover
         best_result = min(search_results)
 
-        size = bbox_to_dimensions(
-            aoi_bbox,
-            resolution=10,
-        )
-
-        if output_type == "visual":
-            eval_script = EvalScripts.VISUAL.value
-        if output_type == "ndvi":
-            eval_script = EvalScripts.NDVI.value
-
+        # get image and download
         request_img = SentinelHubRequest(
             evalscript=eval_script,
             input_data=[
@@ -114,18 +122,18 @@ class SentinelHubAdapter:
                 )
             ],
             bbox=aoi_bbox,
-            size=size,
+            size=aoi_size,
             config=self.config,
             data_folder="data",
         )
 
         image = request_img.get_data(show_progress=True)
-        file_name = f"data/{datetime.now()}_{time_interval[0]}_{aoi_coords[0]}_{aoi_coords[2]}_{output_type}.{output_format}"
+        file_name = f"data/{best_result.properties.datetime}_{aoi_coords[0]}_{aoi_coords[1]}_{output_type}.{output_format}"
         write_data(
             filename=file_name,
             data=image[0],
         )
-        return file_name
+        return best_result  # , file_name
 
 
 if __name__ == "__main__":
@@ -137,6 +145,6 @@ if __name__ == "__main__":
         (15.461282, 46.757161, 15.574922, 46.851514),
         ("2024-05-01", "2024-05-20"),
         "visual",
-        MimeType.PNG.value,
+        "png",
     )
     print(file)
