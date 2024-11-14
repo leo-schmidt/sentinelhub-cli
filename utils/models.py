@@ -3,24 +3,8 @@ from typing import List
 from pydantic import BaseModel, Field
 
 
-# class CrsProperties(BaseModel):
-#     name: str
-
-
-# class CoordinateSystem(BaseModel):
-#     type: str
-#     properties: CrsProperties
-
-
-# class Geometry(BaseModel):
-#     crs: CoordinateSystem
-#     coordinates: List[List[List[List[float]]]]
-#     type: str
-
-
 class ResultProperties(BaseModel):
     datetime: str
-    # proj_geometry: Geometry = Field(..., alias='proj:geometry')
     eo_cloud_cover: float = Field(..., alias="eo:cloud_cover")
 
 

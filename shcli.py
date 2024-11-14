@@ -1,6 +1,11 @@
 import os
 from pydantic import ValidationError
-from input_validation import AreaOfInterest, OutputFormats, OutputTypes, TimeOfInterest
+from utils.input_validation import (
+    AreaOfInterest,
+    OutputFormats,
+    OutputTypes,
+    TimeOfInterest,
+)
 from shadapter import SentinelHubAdapter
 import typer
 from PyInquirer import prompt

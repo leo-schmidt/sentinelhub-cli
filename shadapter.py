@@ -11,8 +11,8 @@ from sentinelhub import (
     MimeType,
     write_data,
 )
-from models import SearchResult
-from evalscripts import EvalScript
+from utils.models import SearchResult
+from utils.evalscripts import EvalScript
 
 
 class SentinelHubAdapter:
