@@ -1,7 +1,3 @@
-import os
-from models import SearchResult
-from evalscripts import EvalScripts
-
 from sentinelhub import (
     SHConfig,
     DataCollection,
@@ -12,6 +8,8 @@ from sentinelhub import (
     CRS,
     MimeType,
 )
+from models import SearchResult
+from evalscripts import EvalScripts
 
 
 class SentinelHubAdapter:
@@ -31,7 +29,6 @@ class SentinelHubAdapter:
                 "include": [
                     "id",
                     "properties.datetime",
-                    # "properties.proj:geometry",
                     "properties.eo:cloud_cover",
                     "bbox",
                 ],
@@ -92,16 +89,3 @@ class SentinelHubAdapter:
         )
 
         request_img.get_data(save_data=True, show_progress=True)
-
-
-if __name__ == "__main__":
-    adapter = SentinelHubAdapter(
-        os.environ.get("CLIENT_ID"),
-        os.environ.get("CLIENT_SECRET"),
-    )
-    adapter.request_image(
-        aoi_coords=[16.461282, 46.757161, 16.574922, 46.851514],
-        time_interval=("2022-05-01", "2022-05-20"),
-        output_type="ndvi",
-        output_format="png",
-    )
