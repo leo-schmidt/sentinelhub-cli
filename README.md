@@ -78,3 +78,11 @@ python -m shcli.py  <area of interest> 2024-10-01,2024-10-31 <options>
 ## Notes
 You can rename the `.env.example` file to `.env` and store your Sentinel Hub credentials there.<br>
 If you specify the `--env` option in the CLI, it will retrieve the credentials from that file instead of prompting for it.
+
+## Running tests <a name = "tests"></a>
+
+Unit tests can be executed like this:
+
+```
+pytest .
+```

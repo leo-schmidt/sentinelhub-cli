@@ -16,7 +16,7 @@ from utils.evalscripts import EvalScript
 
 
 class SentinelHubAdapter:
-    def __init__(self, client_id, client_secret):
+    def __init__(self, client_id: str, client_secret: str) -> None:
         self.config = SHConfig()
         self.config.sh_client_id = client_id
         self.config.sh_client_secret = client_secret
@@ -53,9 +53,7 @@ class SentinelHubAdapter:
             },
         )
 
-        search_results = [
-            SearchResult.model_validate(result) for result in search_iterator
-        ]
+        search_results = [SearchResult.model_validate(r) for r in search_iterator]
         return search_results
 
     def request_image(
@@ -133,7 +131,7 @@ class SentinelHubAdapter:
             filename=file_name,
             data=image[0],
         )
-        return best_result  # , file_name
+        return best_result
 
 
 if __name__ == "__main__":
