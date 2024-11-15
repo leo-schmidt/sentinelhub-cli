@@ -5,6 +5,7 @@
 - [About](#about)
 - [Getting Started](#getting_started)
 - [CLI Usage](#usage)
+- [Running tests](#tests)
 
 ## About <a name = "about"></a>
 
@@ -18,9 +19,10 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-This project needs Python <= 3.9.7. This is caused by PyInquirer colliding with a change in the collections interface starting with Python 3.10. ([Source1](https://stackoverflow.com/a/70557518), [Source2](https://github.com/CITGuru/PyInquirer/issues/181))<br>
-You also need to have an active Sentinel Hub account. You can create a free 30 day trial [here](https://www.sentinel-hub.com/create_account/).<br>
+You need to have an active Sentinel Hub account. You can create a free 30 day trial [here](https://www.sentinel-hub.com/create_account/).<br>
 Once created, refer to [this guide](https://docs.sentinel-hub.com/api/latest/api/overview/authentication/) to create an OAuth client for your account. Make sure to take note of the client ID and secret created, as they will only be visible once.
+
+This project needs Python <= 3.9.7. This is caused by PyInquirer colliding with a change in the collections interface starting with Python 3.10. ([Source1](https://stackoverflow.com/a/70557518), [Source2](https://github.com/CITGuru/PyInquirer/issues/181))
 
 ### Installing
 
@@ -60,7 +62,7 @@ python -m shcli.py <area of interest> <time of interest> <options>
 ```
 
 The CLI will prompt you for your Sentinel Hub credentials and continue to download the image to a new `/data` folder.
-## Input formats
+### Input formats
 
 The area of interest parameter expects **WGS84 decimal degree coordinates**.<br>
 They need to be specified as a [bounding box](https://wiki.openstreetmap.org/wiki/Bounding_box), separated by comma:
@@ -75,7 +77,7 @@ The time of interest parameter expects **two dates (start, end) in format YYYY-M
 python -m shcli.py  <area of interest> 2024-10-01,2024-10-31 <options>
 ```
 
-## Notes
+### Notes
 You can rename the `.env.example` file to `.env` and store your Sentinel Hub credentials there.<br>
 If you specify the `--env` option in the CLI, it will retrieve the credentials from that file instead of prompting for it.
 
